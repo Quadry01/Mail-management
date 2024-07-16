@@ -51,16 +51,15 @@ export default function Home() {
       {
         method: "POST",
         body: formData,
-      }
-    )
+      })
       .then((response) => response.json())
       .then((data) => {
         if (data.result === "success") {
           setImageURL(data.url);
           url = data.url;
-          alert1
-          console.log(imageURL);
-          // window.location.reload();
+          // console.log(imageURL);
+          aleert("Email entered successfully")
+          window.location.reload();
         } else {
           console.error("Error uploading file:", data.error);
         }
@@ -202,7 +201,6 @@ export default function Home() {
         <button
           id="btnSubmit"
           type="submit"
-          
           className="text-white mt-2 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"
         >
           Submit
