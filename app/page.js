@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import Link from "next/link";
+import React, { useRef, useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -17,7 +18,6 @@ export default function Home() {
   const alert2 = () => toast("Feature coming soon");
 
   const [imageURL, setImageURL] = useState("");
-  let url;
 
   const fileInputRef = useRef(null);
   const dataDivRef = useRef(null);
@@ -51,14 +51,13 @@ export default function Home() {
       {
         method: "POST",
         body: formData,
-      })
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         if (data.result === "success") {
           setImageURL(data.url);
-          url = data.url;
-          // console.log(imageURL);
-          aleert("Email entered successfully")
+          alert("Email entered successfully");
           window.location.reload();
         } else {
           console.error("Error uploading file:", data.error);
@@ -68,6 +67,10 @@ export default function Home() {
         console.error("Error uploading file:", error);
       });
   };
+  // useEffect(() => {
+  //   console.log("Count updated:", imageURL); // Logs after every state update
+  // }, [imageURL]); // Dependency array to run effect when 'count' changes
+
   return (
     <div>
       <div className="text-center mt-36 text-xl">
@@ -82,7 +85,7 @@ export default function Home() {
         onSubmit={handleSubmit}
       >
         <h6 className="mb-4" suppressHydrationWarning>
-          Mail Id: {mailID}{" "}
+          Mail Id: {mailID}
         </h6>
         <div className="hidden">
           <input type="text" name="Mail_id" value={mailID} />
@@ -214,6 +217,30 @@ export default function Home() {
           Track mail
         </button>
       </form>
+      <div className="m-auto text-center mt-8">
+        <Link
+          className="p-4 bg-green-500 rounded-md mr-4"
+                    target="#"
+
+          href={
+            "https://docs.google.com/spreadsheets/d/1xdSrAoVfT6oKMVaro4cAsMpm_hzW9ZR_Pbm79kkY_1U/edit?gid=0#gid=0"
+          }
+        >
+          {" "}
+          Database
+        </Link>
+
+        <Link
+          className="p-4 bg-green-500 rounded-md"
+          target="#"
+          href={
+            "https://drive.google.com/drive/u/2/folders/1NzOkj1eF4ggf3pNUSyeZMzaTv3MWXK91"
+          }
+        >
+          {" "}
+          Attachment folder
+        </Link>
+      </div>
     </div>
   );
 }
