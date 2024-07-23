@@ -4,6 +4,13 @@ import Link from "next/link";
 import React, { useRef, useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ClipLoader from "react-spinners/ClipLoader";
+
+const CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "red",
+};
 
 function generateUniqueId() {
   const timestamp = Date.now().toString(36).slice(-4);
@@ -11,18 +18,58 @@ function generateUniqueId() {
   return `${timestamp}${randomComponent}`;
 }
 
-const mailID = generateUniqueId();
+let ID = generateUniqueId();
 
 export default function Home() {
   const alert1 = () => toast("Email entered successfully");
   const alert2 = () => toast("Feature coming soon");
-
-  const [imageURL, setImageURL] = useState("");
-
+  const [loading, setLoading] = useState(false);
+  const [color, setColor] = useState("#953131");
+  let globalImageURL = "";
+  // const [imageURL, setImageURL] = useState(globalImageURL);
+  const [mailQeury, setMailQuery] = useState("");
+  let [tableHeader, setTableHeader] = useState([]);
+  const [tableBody, setTableBody] = useState([]);
+  const [mailID, setmailID] = useState(generateUniqueId());
   const fileInputRef = useRef(null);
   const dataDivRef = useRef(null);
   const formRef = useRef(null);
+  let Hearders = ["Date","Mail_id","Sender","Title","Endoersed_By","Remarks",	"Dispatched_To",	"Date_dispatched", "URL"]
+  // SEARCH QUERY
+  const scriptUrl =
+    "https://script.google.com/macros/s/AKfycbw_Lk9yqHs_9MObuDVWofREGXf1FQYy91XA3AHQseI2xtiHLzDT5PUcxHnWONyRmPmDGQ/exec"; // Replace with your script URL
 
+  async function fetchData() {
+
+    try {
+      const response = await fetch(
+        `${scriptUrl}?mailId=${encodeURIComponent(mailQeury)}`
+      );
+      const result = await response.json();
+
+      if (result.result === "success") {
+        displayData(result.data);  
+      } else {
+        alert("Error: " + result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }
+
+  const displayData = (data) => {
+    // Update table header
+    
+    // const headerRow = data.map((_, index) => `Colum ${index + 1}`);
+    // setTableHeader(headerRow);
+
+    setTableHeader(Hearders);
+
+    // Update table body
+    setTableBody([data]);
+  };
+
+  // FILE HANDLER
   const handleFileChange = () => {
     const file = fileInputRef.current.files[0];
     const fr = new FileReader();
@@ -41,13 +88,13 @@ export default function Home() {
     fr.readAsDataURL(file);
   };
 
+  // FORM SUBMIT
   const handleSubmit = (event) => {
     event.preventDefault();
-
+    setLoading(true);
     const formData = new FormData(formRef.current);
-
     fetch(
-      "https://script.google.com/macros/s/AKfycbxhmFqHHpJws-rjUyx8A8k4rmkxw4zAM81dxv5yVN1rAveShu55zJwInKu51ylfkTI0zw/exec",
+      "https://script.google.com/macros/s/AKfycbw_Lk9yqHs_9MObuDVWofREGXf1FQYy91XA3AHQseI2xtiHLzDT5PUcxHnWONyRmPmDGQ/exec",
       {
         method: "POST",
         body: formData,
@@ -56,8 +103,9 @@ export default function Home() {
       .then((response) => response.json())
       .then((data) => {
         if (data.result === "success") {
-          setImageURL(data.url);
-          alert("Email entered successfully");
+          globalImageURL = data.url; 
+          alert(globalImageURL)
+          setLoading(false);
           window.location.reload();
         } else {
           console.error("Error uploading file:", data.error);
@@ -91,7 +139,7 @@ export default function Home() {
           <input type="text" name="Mail_id" value={mailID} />
         </div>
         <div className="hidden">
-          <input type="text" name="URL" value={imageURL} />
+          <input type="text" name="URL" value={globalImageURL} />
         </div>
         <div className="relative z-0 w-full mb-5 group">
           <input
@@ -106,7 +154,7 @@ export default function Home() {
             htmlFor="floating_email"
             className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
           >
-            Sender
+            Sender*
           </label>
         </div>
         <div className="relative z-0 w-full mb-5 group">
@@ -122,7 +170,7 @@ export default function Home() {
             htmlFor="Title"
             className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
           >
-            Title
+            Title*
           </label>
         </div>
         <div className="relative z-0 w-full mb-5 group">
@@ -138,24 +186,30 @@ export default function Home() {
             htmlFor="floating_phone"
             className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
           >
-            Endorsed by
+            Endorsed by*
           </label>
         </div>
         <div className="grid md:grid-cols-2 md:gap-6">
           <div className="relative z-0 w-full mb-5 group">
-            <input
-              type="text"
+            <select
               name="Remarks"
+              type="text"
               id="floating_first_name"
               className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-              placeholder=" "
               required
-            />
+            >
+              <option className="" value=""></option>
+              <option value="New">New</option>
+              <option value="Minute">Minute</option>
+              <option value="Urgent">Urgent</option>
+              <option value="Confidential">Confidential</option>
+              <option value="Immidiate">Immidiate</option>
+            </select>
             <label
               htmlFor="floating_first_name"
               className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
             >
-              Remarks
+              Remarks*
             </label>
           </div>
           <div className="relative z-0 w-full mb-5 group">
@@ -171,7 +225,7 @@ export default function Home() {
               htmlFor="floating_last_name"
               className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
             >
-              Dispatched To
+              Dispatched To*
             </label>
           </div>
         </div>
@@ -189,7 +243,7 @@ export default function Home() {
               htmlFor="floating_phone"
               className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
             >
-              Date Dispatched
+              Date Dispatched*
             </label>
           </div>
         </div>
@@ -207,21 +261,91 @@ export default function Home() {
           className="text-white mt-2 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"
         >
           Submit
-        </button>{" "}
+        </button>
+        <ClipLoader
+          color={color}
+          loading={loading}
+          size={50}
+          aria-label="Loading Spinner"
+          data-testid="loader"
+        />
         <ToastContainer />
-        <br />
+      </form>
+
+      {/* SEARCH SECTION */}
+      <form className="max-w-lg mx-auto mt-8 uploadForm" onSubmit={fetchData()}>
+        <div className="relative z-0 w-full mb-5 group">
+          <input
+            type="text"
+            value={mailQeury}
+            onChange={(e) => setMailQuery(e.target.value)}
+            className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-600 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+            required
+          />
+          <label
+            htmlFor="Title"
+            className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+          >
+            Enter Mail id
+          </label>
+        </div>
+
         <button
-          onClick={alert2}
+          type="submit"
+          onClick={(e) => {
+            e.preventDefault();
+          }}
           className="text-white mt-2 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"
         >
           Track mail
         </button>
       </form>
+
+      {/* DIDPLAY TABLE HERE */}
+      <table
+        style={{ marginTop: "20px", borderCollapse: "collapse", width: "100%" }}
+      >
+        <thead>
+          <tr>
+            {tableHeader.map((header, index) => (
+              <th
+                key={index}
+                style={{
+                  border: "1px solid #ddd",
+                  padding: "8px",
+                  textAlign: "left",
+                  backgroundColor: "#f2f2f2",
+                }}
+              >
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {tableBody.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {row.map((cell, cellIndex) => (
+                <td
+                  key={cellIndex}
+                  style={{
+                    border: "1px solid #ddd",
+                    padding: "8px",
+                    textAlign: "left",
+                  }}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
       <div className="m-auto text-center mt-8">
         <Link
           className="p-4 bg-green-500 rounded-md mr-4"
-                    target="#"
-
+          target="#"
           href={
             "https://docs.google.com/spreadsheets/d/1xdSrAoVfT6oKMVaro4cAsMpm_hzW9ZR_Pbm79kkY_1U/edit?gid=0#gid=0"
           }
