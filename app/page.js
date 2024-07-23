@@ -60,7 +60,7 @@ export default function Home() {
   const displayData = (data) => {
     // Update table header
     
-    // const headerRow = data.map((_, index) => `Colum ${index + 1}`);
+    const headerRow = data.map((_, index) => `Colum ${index + 1}`);
     // setTableHeader(headerRow);
 
     setTableHeader(Hearders);
